@@ -1,23 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Line, Pie } from 'react-chartjs-2';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend
 } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, ChartDataLabels);
+
+// ── Dark Theme Constants ──
+const theme = {
+  bg: '#0d1117',
+  card: '#161b22',
+  border: '#30363d',
+  text: '#e6edf3',
+  muted: '#8b949e',
+  green: '#2ea043',
+  blue: '#58a6ff',
+  purple: '#bc8cff',
+  orange: '#d29922',
+  red: '#f85149',
+};
 
 function Card({ title, total, target, unit, color }) {
   const pct = Math.min(100, Math.round((total / target) * 100));
+  const over = total > target;
   return (
-    <div style={{ border: '1px solid #ddd', borderRadius: 12, padding: 16, margin: 8, width: 220 }}>
-      <h3 style={{ margin: 0, color: '#666', fontSize: 14 }}>{title}</h3>
-      <div style={{ fontSize: 28, fontWeight: 'bold', margin: '8px 0' }}>
-        {total}<span style={{ fontSize: 16, color: '#999' }}> / {target} {unit}</span>
+    <div style={{
+      background: theme.card, border: `1px solid ${theme.border}`,
+      borderRadius: 16, padding: 20, margin: 10, minWidth: 200, flex: 1,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    }}>
+      <div style={{ color: theme.muted, fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        {title}
       </div>
-      <div style={{ height: 8, background: '#eee', borderRadius: 4 }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 4 }} />
+      <div style={{ fontSize: 32, fontWeight: 700, color: theme.text, margin: '8px 0 4px' }}>
+        {total}
+        <span style={{ fontSize: 16, fontWeight: 400, color: theme.muted }}> / {target} {unit}</span>
+      </div>
+      <div style={{ height: 8, background: '#21262d', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{
+          width: `${Math.min(pct, 100)}%`, height: '100%',
+          background: over ? `linear-gradient(90deg, ${color}, ${theme.orange})` : color,
+          borderRadius: 4,
+        }} />
+      </div>
+      <div style={{ color: theme.muted, fontSize: 12, marginTop: 6, textAlign: 'right' }}>
+        {over ? `⚠️ ${pct}% exceeded` : `${pct}%`}
       </div>
     </div>
   );
@@ -25,24 +55,94 @@ function Card({ title, total, target, unit, color }) {
 
 function LineChart({ title, labels, data, color, yLabel }) {
   return (
-    <div style={{ border: '1px solid #ddd', borderRadius: 12, padding: 16, margin: 8, flex: 1, minWidth: 300 }}>
-      <h3 style={{ margin: 0, color: '#333', fontSize: 16 }}>{title}</h3>
+    <div style={{
+      background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16,
+      padding: 20, margin: 10, flex: 1, minWidth: 300,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    }}>
+      <h3 style={{ margin: '0 0 12px', color: theme.text, fontSize: 15, fontWeight: 600 }}>{title}</h3>
       <Line data={{
         labels,
-        datasets: [{ label: yLabel, data, borderColor: color, backgroundColor: color + '33', tension: 0.3 }]
-      }} options={{ responsive: true }} />
+        datasets: [{ label: yLabel, data, borderColor: color, backgroundColor: color + '44', tension: 0.3, pointRadius: 4, pointHoverRadius: 6 }]
+      }} options={{
+        responsive: true,
+        color: theme.text,
+        plugins: { legend: { labels: { color: theme.muted } } },
+        scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { ticks: { color: theme.muted }, grid: { color: theme.border } } }
+      }} />
     </div>
   );
 }
 
 function PieChart({ title, labels, data }) {
-  const colors = ['#4caf50', '#ff9800', '#f44336'];
+  const colors = [theme.green, theme.orange, theme.red];
+  const totalGrams = data.reduce((a, b) => a + b, 0);
+  const percentages = data.map(v => totalGrams > 0 ? ((v / totalGrams) * 100).toFixed(1) : 0);
+
   return (
-    <div style={{ border: '1px solid #ddd', borderRadius: 12, padding: 16, margin: 8, width: 300 }}>
-      <h3 style={{ margin: 0, color: '#333', fontSize: 16 }}>{title}</h3>
+    <div style={{
+      background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16,
+      padding: 20, margin: 10, flex: 1, minWidth: 300,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    }}>
+      <h3 style={{ margin: '0 0 12px', color: theme.text, fontSize: 15, fontWeight: 600 }}>{title}</h3>
       <Pie data={{
-        labels, datasets: [{ data, backgroundColor: colors, borderWidth: 1 }]
-      }} options={{ responsive: true }} />
+        labels: labels.map((l, i) => `${l}: ${data[i].toFixed(1)}g (${percentages[i]}%)`),
+        datasets: [{
+          data, backgroundColor: colors, borderWidth: 1, borderColor: theme.bg,
+        }]
+      }} options={{
+        responsive: true,
+        color: theme.text,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: theme.text, padding: 12, font: { size: 12 } } },
+          datalabels: {
+            color: '#fff', fontWeight: 'bold', fontSize: 12,
+            formatter: (v, ctx) => {
+              const pct = percentages[ctx.dataIndex];
+              return pct > 5 ? `${pct}%` : '';
+            },
+            font: { weight: 'bold' },
+          }
+        }
+      }} />
+      {totalGrams > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 12, flexWrap: 'wrap' }}>
+          {labels.map((l, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 10, height: 10, borderRadius: 3, background: colors[i] }} />
+              <span style={{ color: theme.muted, fontSize: 12 }}>{l}: <strong style={{ color: theme.text }}>{data[i].toFixed(1)}g</strong></span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WeightChart({ title, wbf7 }) {
+  return (
+    <div style={{
+      background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16,
+      padding: 20, margin: 10, flex: 1, minWidth: 300,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    }}>
+      <h3 style={{ margin: '0 0 12px', color: theme.text, fontSize: 15, fontWeight: 600 }}>{title}</h3>
+      <Line data={{
+        labels: wbf7.labels,
+        datasets: [
+          { label: 'Weight (kg)', data: wbf7.weight, borderColor: theme.purple, backgroundColor: theme.purple + '44', yAxisID: 'y', tension: 0.3, pointRadius: 4 },
+          { label: 'Body Fat %', data: wbf7.body_fat, borderColor: theme.orange, backgroundColor: theme.orange + '44', yAxisID: 'y1', tension: 0.3, pointRadius: 4 }
+        ]
+      }} options={{
+        responsive: true,
+        color: theme.text,
+        plugins: { legend: { labels: { color: theme.muted } } },
+        scales: {
+          y: { type: 'linear', position: 'left', ticks: { color: theme.muted }, grid: { color: theme.border } },
+          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: theme.muted } }
+        }
+      }} />
     </div>
   );
 }
@@ -63,34 +163,35 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ fontFamily: 'system-ui', padding: 24 }}>
-      <h1 style={{ textAlign: 'center' }}>🍽️ Diet Tracker Dashboard</h1>
+    <div style={{
+      background: theme.bg, minHeight: '100vh', padding: 24,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      color: theme.text,
+    }}>
+      <h1 style={{ textAlign: 'center', margin: '0 0 24px', fontSize: 24, fontWeight: 700 }}>
+        🍽️ Diet Tracker Dashboard
+      </h1>
 
-      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
-        {today && <Card title="Today Calories" total={today.calories.total} target={today.calories.target} unit="kcal" color="#4caf50" />}
-        {today && <Card title="Today Protein" total={today.protein.total} target={today.protein.target} unit="g" color="#2196f3" />}
+      {/* Cards */}
+      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', maxWidth: 600, margin: '0 auto 12px' }}>
+        {today && <Card title="Today Calories" total={today.calories.total} target={today.calories.target} unit="kcal" color={theme.green} />}
+        {today && <Card title="Today Protein" total={today.protein.total} target={today.protein.target} unit="g" color={theme.blue} />}
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <LineChart title="Daily Calories (7d)" labels={cal7.labels} data={cal7.values} color="#4caf50" yLabel="kcal" />
-        <LineChart title="Daily Protein (7d)" labels={prot7.labels} data={prot7.values} color="#2196f3" yLabel="g" />
+      {/* Line graphs row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
+        <LineChart title="Daily Calories (7d)" labels={cal7.labels} data={cal7.values} color={theme.green} yLabel="kcal" />
+        <LineChart title="Daily Protein (7d)" labels={prot7.labels} data={prot7.values} color={theme.blue} yLabel="g" />
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ border: '1px solid #ddd', borderRadius: 12, padding: 16, margin: 8, flex: 1, minWidth: 300 }}>
-          <h3 style={{ margin: 0, color: '#333', fontSize: 16 }}>Weight & Body Fat (7d)</h3>
-          <Line data={{
-            labels: wbf7.labels,
-            datasets: [
-              { label: 'Weight (kg)', data: wbf7.weight, borderColor: '#9c27b0', backgroundColor: '#9c27b033', yAxisID: 'y', tension: 0.3 },
-              { label: 'Body Fat %', data: wbf7.body_fat, borderColor: '#ff9800', backgroundColor: '#ff980033', yAxisID: 'y1', tension: 0.3 }
-            ]
-          }} options={{
-            responsive: true,
-            scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }
-          }} />
-        </div>
-        {macros.values.length > 0 && <PieChart title="Macros Today (g)" labels={macros.labels} data={macros.values} />}
+      {/* Bottom row: Weight + Pie */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
+        <WeightChart title="Weight & Body Fat (7d)" wbf7={wbf7} />
+        {macros.values.length > 0 && <PieChart title="Macros Today" labels={macros.labels} data={macros.values} />}
+      </div>
+
+      <div style={{ textAlign: 'center', color: theme.muted, fontSize: 11, marginTop: 32 }}>
+        Diet Tracker v1.0 &mdash; auto-deploy from GitHub
       </div>
     </div>
   );
