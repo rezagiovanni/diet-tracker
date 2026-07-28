@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code + built frontend
 COPY backend/ ./
-COPY --from=frontend-build /frontend/build ./static
+COPY --from=frontend-build /frontend/build/. ./static
 
 # SA key (di-tulis CI ke service/)
 COPY service/diet_webapp_key.json /home/rezagiovanni/diet/service/diet_webapp_key.json
