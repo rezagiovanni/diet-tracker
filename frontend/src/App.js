@@ -203,6 +203,7 @@ export default function App() {
   const [macros, setMacros] = useState({ labels: [], values: [] });
   const [deficit, setDeficit] = useState({ labels: [], values: [], pcts: [], tdee: 2035 });
   const [todayFoods, setTodayFoods] = useState([]);
+  const [proteinTips, setProteinTips] = useState(null);
 
   useEffect(() => {
     axios.get('/today').then(r => setToday(r.data));
@@ -227,7 +228,40 @@ export default function App() {
       {/* Cards */}
       <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', maxWidth: 900, margin: '0 auto 12px' }}>
         {today && <Card title="Today Calories" total={today.calories.total} target={today.calories.target} unit="kcal" color={theme.green} />}
-        {today && <Card title="Today Protein" total={today.protein.total} target={today.protein.target} unit="g" color={theme.blue} />}
+        {today && (
+          <div style={{
+            background: theme.card, border: `1px solid ${theme.border}`,
+            borderRadius: 16, padding: 20, margin: 10, minWidth: 200, flex: 1,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer'
+          }} onClick={() => axios.get('/protein-tips').then(r => setProteinTips(r.data))}>
+            <div style={{ color: theme.muted, fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              Today Protein
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ fontSize: 32, fontWeight: 700, color: theme.text, margin: '8px 0 4px' }}>
+                {today.protein.total}
+                <span style={{ fontSize: 16, fontWeight: 400, color: theme.muted }}> / {today.protein.target} g</span>
+              </div>
+              <div style={{ fontSize: 20 }}>💡</div>
+            </div>
+            <div style={{ height: 8, background: '#21262d', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ width: `${Math.min(Math.round((today.protein.total/today.protein.target)*100),100)}%`, height: '100%', background: theme.blue, borderRadius: 4 }} />
+            </div>
+            <div style={{ color: theme.muted, fontSize: 12, marginTop: 6, textAlign: 'right' }}>
+              {Math.round((today.protein.total/today.protein.target)*100)}%
+            </div>
+            {proteinTips && (
+              <div style={{ background: '#21262d', borderRadius: 10, padding: 10, marginTop: 10, color: theme.muted, fontSize: 12 }}>
+                <div style={{ fontWeight: 600, marginBottom: 6, color: theme.orange }}>Protein tips</div>
+                {proteinTips.suggestions.map((s, i) => (
+                  <div key={i} style={{ padding: '2px 0', borderBottom: `1px solid ${theme.border}33`, color: theme.text }}>
+                    <strong style={{ color: theme.green }}>{s.food}</strong> {s.portion_g}g → <span style={{ color: theme.blue }}>+{s.protein_gain}g protein</span> / +{s.kcal_gain} kcal
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         {deficit.values.length > 0 && (() => {
           const v = deficit.values[deficit.values.length - 1];
           const pct = deficit.pcts[deficit.pcts.length - 1];

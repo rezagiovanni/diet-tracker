@@ -140,6 +140,54 @@ def today_foods():
     items.sort(key=lambda x: x["kcal_pct"], reverse=True)
     return {"date": t, "items": items}
 
+@app.get("/protein-tips")
+def protein_tips():
+    t = _today()
+    tdee = get_tdee()
+    food_rows = _q(f"SELECT food, kcal_per_100g, protein_per_100g FROM `{PROJECT}.{DATASET}.food_db` WHERE kcal_per_100g>0 AND protein_per_100g>0 ORDER BY protein_per_100g DESC")
+    intake_rows = _q(f"SELECT COALESCE(SUM(kcal),0) k, COALESCE(SUM(protein_g),0) p FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}'")
+    intake = intake_rows[0] if intake_rows else {}
+    kcal_used = float(intake.get("k",0) or 0)
+    protein_used = float(intake.get("p",0) or 0)
+    remaining_kcal = max(0, tdee - kcal_used)
+    remaining_protein = max(0, 90 - protein_used)
+
+    suggestions = []
+    for r in food_rows:
+        food = r.get("food")
+        kcal100 = float(r.get("kcal_per_100g",0) or 0)
+        prot100 = float(r.get("protein_per_100g",0) or 0)
+        if kcal100 <= 0 or prot100 <= 0:
+            continue
+        max_by_kcal = remaining_kcal / kcal100 * 100
+        max_to_target = remaining_protein / prot100 * 100 if remaining_protein > 0 else 0
+        if max_to_target > 0:
+            portion = min(max_by_kcal, max_to_target)
+        else:
+            portion = 0
+        if portion <= 0 or prot100 < 8 or kcal100 > 350:
+            continue
+        suggestions.append({
+            "food": food,
+            "kcal": round(kcal100,1),
+            "protein": round(prot100,1),
+            "portion_g": round(portion,1),
+            "kcal_gain": round(portion * kcal100 / 100,1),
+            "protein_gain": round(portion * prot100 / 100,1),
+            "protein_per_100kcal": round(prot100 / kcal100 * 100,1),
+            "note": None
+        })
+    suggestions.sort(key=lambda x: (-x["portion_g"], -x["protein_gain"]))
+    suggestions = suggestions[:8]
+    return {
+        "tdee": int(tdee),
+        "kcal_used": round(kcal_used,1),
+        "protein_used": round(protein_used,1),
+        "remaining_kcal": round(remaining_kcal,1),
+        "remaining_protein": round(remaining_protein,1),
+        "suggestions": suggestions
+    }
+
 # ── Serve SPA ──
 from fastapi.responses import FileResponse, JSONResponse
 import os, mimetypes
