@@ -97,7 +97,8 @@ def deficit_7d():
     rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(kcal),0) kcal FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
     tdee_val = get_tdee()
     data = {r["d"].isoformat(): int(tdee_val - int(r["kcal"])) for r in rows}
-    return {"labels": days, "values": [data.get(d,0) for d in days], "tdee": int(tdee_val)}
+    pcts = {k: round(v / tdee_val * 100, 1) for k, v in data.items()}
+    return {"labels": days, "values": [data.get(d,0) for d in days], "pcts": [pcts.get(d,0) for d in days], "tdee": int(tdee_val)}
 
 @app.get("/weight-bf-7d")
 def weight_bf_7d():

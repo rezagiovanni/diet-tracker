@@ -141,7 +141,7 @@ function DeficitChart({ title, deficit }) {
       </div>
       <Bar data={{
         labels: deficit.labels,
-        datasets: [{ label: 'Defisit (kcal)', data: deficit.values, backgroundColor: colors, borderRadius: 4 }]
+        datasets: [{ label: 'Defisit (%)', data: deficit.pcts, backgroundColor: colors, borderRadius: 4 }]
       }} options={{
         responsive: true, color: theme.text,
         plugins: {
@@ -149,12 +149,12 @@ function DeficitChart({ title, deficit }) {
           datalabels: {
             color: '#fff', anchor: 'end', align: 'end', offset: 2,
             font: { weight: 'bold', size: 10 },
-            formatter: v => v || ''
+            formatter: v => v > 0 ? v + '%' : ''
           }
         },
         scales: {
           x: { ticks: { color: theme.muted }, grid: { display: false } },
-          y: { afterFit: (a) => a.width = 20, ticks: { display: false }, grid: { color: theme.border } }
+          y: { afterFit: (a) => a.width = 20, ticks: { display: false }, grid: { color: theme.border }, suggestedMax: 100 }
         }
       }} />
     </div>
@@ -228,6 +228,7 @@ export default function App() {
         {today && <Card title="Today Protein" total={today.protein.total} target={today.protein.target} unit="g" color={theme.blue} />}
         {deficit.values.length > 0 && (() => {
           const v = deficit.values[deficit.values.length - 1];
+          const pct = deficit.pcts[deficit.pcts.length - 1];
           const good = v >= 0;
           return (
             <div style={{
@@ -238,12 +239,11 @@ export default function App() {
               <div style={{ color: theme.muted, fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 Today Deficit
               </div>
-              <div style={{ fontSize: 32, fontWeight: 700, color: good ? theme.green : theme.red, margin: '8px 0 4px' }}>
-                {good ? '+' : ''}{v}
-                <span style={{ fontSize: 16, fontWeight: 400, color: theme.muted }}> kcal</span>
+              <div style={{ fontSize: 40, fontWeight: 700, color: good ? theme.green : theme.red, margin: '4px 0' }}>
+                {pct}%
               </div>
-              <div style={{ color: theme.muted, fontSize: 12 }}>
-                {good ? `🔥 ${v} kcal defisit` : '⚠️ over intake'}
+              <div style={{ color: theme.muted, fontSize: 13 }}>
+                🔥 {Math.abs(v)}/{deficit.tdee} kcal deficit
               </div>
             </div>
           );
