@@ -90,13 +90,19 @@ def macros_today():
     r = rows[0] if rows else {}
     return {"labels": ["Protein","Carbs","Fat"], "values": [round(r.get("p",0),1), round(r.get("c",0),1), round(r.get("f",0),1)]}
 
-# ── Serve React build as static ──
+# ── Serve SPA ──
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 STATIC = os.environ.get("STATIC_DIR", os.path.join(os.path.dirname(__file__), "static"))
-if os.path.isdir(STATIC):
-    app.mount("/static", StaticFiles(directory=STATIC), name="static")
-    @app.get("/{_:path}")
-    def serve_frontend():
-        return FileResponse(os.path.join(STATIC, "index.html"))
+
+app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+@app.exception_handler(404)
+async def serve_spa(request, exc):
+    """Render index.html for any non-API path (SPA routing)."""
+    index = os.path.join(STATIC, "index.html")
+    if os.path.isfile(index):
+        return FileResponse(index, media_type="text/html")
+    from fastapi.responses import JSONResponse
+    return JSONResponse({"detail": "Not Found"}, status_code=404)
