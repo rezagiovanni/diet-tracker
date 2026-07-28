@@ -75,7 +75,7 @@ function LineChart({ title, labels, data, color, yLabel }) {
             formatter: v => v || ''
           }
         },
-        scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { afterFit: (a) => a.width = 20, ticks: { display: false, color: theme.muted }, grid: { color: theme.border } } }
+        scales: { x: { ticks: { display: false, color: theme.muted }, grid: { color: theme.border } }, y: { afterFit: (a) => a.width = 20, ticks: { display: false, color: theme.muted }, grid: { color: theme.border } } }
       }} />
     </div>
   );
@@ -153,7 +153,7 @@ function DeficitChart({ title, deficit }) {
           }
         },
         scales: {
-          x: { ticks: { color: theme.muted }, grid: { display: false } },
+          x: { ticks: { display: false, color: theme.muted }, grid: { display: false } },
           y: { afterFit: (a) => a.width = 20, ticks: { display: false }, grid: { color: theme.border }, suggestedMax: 100 }
         }
       }} />
@@ -188,7 +188,7 @@ function WeightChart({ title, wbf7 }) {
         },
         scales: {
           y: { ticks: { display: false }, grid: { color: theme.border } },
-          x: { ticks: { color: theme.muted }, grid: { color: theme.border } }
+          x: { ticks: { display: false, color: theme.muted }, grid: { color: theme.border } }
         }
       }} />
     </div>
