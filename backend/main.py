@@ -110,17 +110,19 @@ STATIC = os.environ.get("STATIC_DIR", os.path.join(os.path.dirname(__file__), "s
 
 @app.get("/static/{file_path:path}")
 async def serve_static(file_path: str):
-    """Serve static files (JS, CSS, images)."""
-    full = os.path.join(STATIC, file_path)
-    if os.path.isfile(full):
-        mt, _ = mimetypes.guess_type(full)
-        return FileResponse(full, media_type=mt or "application/octet-stream")
+    """Serve static files (JS, CSS, images). Try multiple paths."""
+    for prefix in [STATIC, os.path.join(STATIC, "static")]:
+        full = os.path.join(prefix, file_path)
+        if os.path.isfile(full):
+            mt, _ = mimetypes.guess_type(full)
+            return FileResponse(full, media_type=mt or "application/octet-stream")
     return JSONResponse({"detail": "Not Found"}, status_code=404)
 
 @app.exception_handler(404)
 async def serve_spa(request, exc):
     """Render index.html for any non-API, non-static path (SPA routing)."""
-    index = os.path.join(STATIC, "index.html")
-    if os.path.isfile(index):
-        return FileResponse(index, media_type="text/html")
+    for prefix in [STATIC, os.path.join(STATIC, "static")]:
+        index = os.path.join(prefix, "index.html")
+        if os.path.isfile(index):
+            return FileResponse(index, media_type="text/html")
     return JSONResponse({"detail": "Not Found"}, status_code=404)
