@@ -139,23 +139,6 @@ function DeficitChart({ title, deficit }) {
       <div style={{ color: theme.muted, fontSize: 12, marginBottom: 12 }}>
         TDEE: {deficit.tdee} kcal &mdash; Target defisit: 500 kcal/hari
       </div>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
-        {deficit.labels.filter((_, i) => i >= deficit.labels.length - 1).map((l, i) => {
-          const idx = deficit.labels.length - 1;
-          const v = deficit.values[idx];
-          return (
-            <div key={i} style={{
-              background: '#21262d', borderRadius: 10, padding: '8px 16px', textAlign: 'center', flex: 1
-            }}>
-              <div style={{ color: theme.muted, fontSize: 11 }}>Today</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: v >= 0 ? theme.green : theme.red }}>
-                {v >= 0 ? '+' : ''}{v} kcal
-              </div>
-              <div style={{ color: theme.muted, fontSize: 11 }}>defisit</div>
-            </div>
-          );
-        })}
-      </div>
       <Bar data={{
         labels: deficit.labels,
         datasets: [{ label: 'Defisit (kcal)', data: deficit.values, backgroundColor: colors, borderRadius: 4 }]
@@ -240,9 +223,31 @@ export default function App() {
       </h1>
 
       {/* Cards */}
-      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', maxWidth: 600, margin: '0 auto 12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', maxWidth: 900, margin: '0 auto 12px' }}>
         {today && <Card title="Today Calories" total={today.calories.total} target={today.calories.target} unit="kcal" color={theme.green} />}
         {today && <Card title="Today Protein" total={today.protein.total} target={today.protein.target} unit="g" color={theme.blue} />}
+        {deficit.values.length > 0 && (() => {
+          const v = deficit.values[deficit.values.length - 1];
+          const good = v >= 0;
+          return (
+            <div style={{
+              background: theme.card, border: `1px solid ${theme.border}`,
+              borderRadius: 16, padding: 20, margin: 10, minWidth: 200, flex: 1,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            }}>
+              <div style={{ color: theme.muted, fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Today Deficit
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 700, color: good ? theme.green : theme.red, margin: '8px 0 4px' }}>
+                {good ? '+' : ''}{v}
+                <span style={{ fontSize: 16, fontWeight: 400, color: theme.muted }}> kcal</span>
+              </div>
+              <div style={{ color: theme.muted, fontSize: 12 }}>
+                {good ? `🔥 ${v} kcal defisit` : '⚠️ over intake'}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Line graphs row */}
