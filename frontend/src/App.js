@@ -67,7 +67,14 @@ function LineChart({ title, labels, data, color, yLabel }) {
       }} options={{
         responsive: true,
         color: theme.text,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            color: '#fff', anchor: 'end', align: 'right', offset: 4,
+            font: { weight: 'bold', size: 10 },
+            formatter: v => v || ''
+          }
+        },
         scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { afterFit: (a) => a.width = 20, ticks: { display: false, color: theme.muted }, grid: { color: theme.border } } }
       }} />
     </div>
@@ -154,7 +161,14 @@ function DeficitChart({ title, deficit }) {
         datasets: [{ label: 'Defisit (kcal)', data: deficit.values, backgroundColor: colors, borderRadius: 4 }]
       }} options={{
         responsive: true, color: theme.text,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            color: '#fff', anchor: 'end', align: 'end', offset: 2,
+            font: { weight: 'bold', size: 10 },
+            formatter: v => v || ''
+          }
+        },
         scales: {
           x: { ticks: { color: theme.muted }, grid: { display: false } },
           y: { afterFit: (a) => a.width = 20, ticks: { display: false }, grid: { color: theme.border } }
@@ -175,13 +189,20 @@ function WeightChart({ title, wbf7 }) {
       <Line data={{
         labels: wbf7.labels,
         datasets: [
-          { label: 'Weight (kg)', data: wbf7.weight, borderColor: theme.purple, backgroundColor: theme.purple + '44', yAxisID: 'y', tension: 0.3, pointRadius: 4 },
-          { label: 'Body Fat %', data: wbf7.body_fat, borderColor: theme.purple, backgroundColor: theme.purple + '44', yAxisID: 'y', tension: 0.3, pointRadius: 4, borderDash: [5, 5] }
+          { label: 'Weight (kg)', data: wbf7.weight, borderColor: theme.blue, backgroundColor: theme.blue + '44', tension: 0.3, pointRadius: 4 },
+          { label: 'Body Fat %', data: wbf7.body_fat, borderColor: theme.orange, backgroundColor: theme.orange + '44', tension: 0.3, pointRadius: 4, borderDash: [5, 5] }
         ]
       }} options={{
         responsive: true,
         color: theme.text,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            color: '#fff', anchor: 'end', align: 'right', offset: 4,
+            font: { weight: 'bold', size: 10 },
+            formatter: v => v || ''
+          }
+        },
         scales: {
           y: { ticks: { display: false }, grid: { color: theme.border } },
           x: { ticks: { color: theme.muted }, grid: { color: theme.border } }
