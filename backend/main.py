@@ -118,9 +118,9 @@ def macros_today():
 
 @app.get("/today-foods")
 def today_foods():
-    """Detail makanan hari ini + kontribusi %."""
+    """Detail makanan hari ini + kontribusi %, grouped by food name."""
     t = _today()
-    rows = _q(f"SELECT food, grams, kcal, protein_g, carbs_g, fat_g FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}' ORDER BY kcal DESC")
+    rows = _q(f"SELECT food, SUM(grams) grams, SUM(kcal) kcal, SUM(protein_g) protein_g, SUM(carbs_g) carbs_g, SUM(fat_g) fat_g FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}' GROUP BY food ORDER BY SUM(protein_g) DESC")
     items = []
     totals = {"kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
     for r in rows:
@@ -137,7 +137,7 @@ def today_foods():
         it["protein_pct"] = round(it["protein"]/totals["protein"]*100,1) if totals["protein"] else 0
         it["carbs_pct"] = round(it["carbs"]/totals["carbs"]*100,1) if totals["carbs"] else 0
         it["fat_pct"] = round(it["fat"]/totals["fat"]*100,1) if totals["fat"] else 0
-    items.sort(key=lambda x: x["kcal_pct"], reverse=True)
+    items.sort(key=lambda x: x["protein_pct"], reverse=True)
     return {"date": t, "items": items}
 
 @app.get("/protein-tips")
