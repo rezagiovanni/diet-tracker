@@ -18,7 +18,24 @@ from fastapi.middleware.cors import CORSMiddleware
 SA_KEY = "/home/rezagiovanni/diet/service/diet_webapp_key.json"
 PROJECT = "data-gym-480909"
 DATASET = "diet"
-TDEE = 2035
+TDEE_FALLBACK = 2035
+
+def get_tdee():
+    """Ambil TDEE terbaru dari daily_measure."""
+    try:
+        rows = _bq().query(f"SELECT tdee FROM `{PROJECT}.{DATASET}.daily_measure` WHERE tdee IS NOT NULL AND tdee > 0 ORDER BY ts DESC LIMIT 1").result()
+        for r in rows:
+            return float(r.tdee)
+    except: pass
+    # fallback: hitung dari data terakhir
+    try:
+        rows = _bq().query(f"SELECT weight_kg, height_cm, bmr FROM `{PROJECT}.{DATASET}.daily_measure` WHERE weight_kg IS NOT NULL ORDER BY ts DESC LIMIT 1").result()
+        for r in rows:
+            w, h, bmr = float(r.weight_kg), float(r.height_cm), float(r.bmr or 0)
+            if bmr > 0: return round(bmr * 1.2, 0)
+            return round((10 * w + 6.25 * h - 5 * 33 + 5) * 1.2, 0)
+    except: pass
+    return TDEE_FALLBACK
 
 _client = None
 def _bq():
@@ -78,8 +95,9 @@ def protein_7d():
 def deficit_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
     rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(kcal),0) kcal FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
-    data = {r["d"].isoformat(): TDEE - int(r["kcal"]) for r in rows}
-    return {"labels": days, "values": [data.get(d,0) for d in days], "tdee": TDEE}
+    tdee_val = get_tdee()
+    data = {r["d"].isoformat(): int(tdee_val - int(r["kcal"])) for r in rows}
+    return {"labels": days, "values": [data.get(d,0) for d in days], "tdee": int(tdee_val)}
 
 @app.get("/weight-bf-7d")
 def weight_bf_7d():
