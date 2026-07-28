@@ -304,11 +304,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Pie + line graphs */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto 12px' }}>
-        {macros.values.length > 0 && <PieChart title="Macros Today" labels={macros.labels} data={macros.values} />}
-      </div>
-
       <div style={{ textAlign: 'center', color: theme.muted, fontSize: 11, marginTop: 32 }}>
         Diet Tracker v1.0 &mdash; auto-deploy from GitHub
       </div>
