@@ -53,8 +53,12 @@ def _q(sql):
         return [dict(r) for r in rows]
     except Exception as e:
         return []
-def _today(): return date.today().isoformat()
-def _week(): d = date.today(); return [(d - timedelta(days=i)).isoformat() for i in range(6, -1, -1)]
+def _today():
+    from datetime import timezone, timedelta, datetime
+    return datetime.now(timezone(timedelta(hours=7))).date()
+def _week():
+    d = _today()
+    return [(d - timedelta(days=i)).isoformat() for i in range(6, -1, -1)]
 
 # ── FastAPI ──
 app = FastAPI(title="Diet Tracker API", version="1.0")
