@@ -31,8 +31,11 @@ def _bq():
 
 def _q(sql):
     try:
+        print(f"BQ SQL: {sql}", flush=True)
         rows = _bq().query(sql).result()
-        return [dict(r) for r in rows]
+        res = [dict(r) for r in rows]
+        print(f"BQ result ({len(res)} rows): {res}", flush=True)
+        return res
     except Exception as e:
         print(f"BQ error: {e}", flush=True)
         return []
