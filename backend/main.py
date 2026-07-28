@@ -91,18 +91,23 @@ def macros_today():
     return {"labels": ["Protein","Carbs","Fat"], "values": [round(r.get("p",0),1), round(r.get("c",0),1), round(r.get("f",0),1)]}
 
 # ── Serve SPA ──
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os
+from fastapi.responses import FileResponse, JSONResponse
+import os, mimetypes
 STATIC = os.environ.get("STATIC_DIR", os.path.join(os.path.dirname(__file__), "static"))
 
-app.mount("/static", StaticFiles(directory=STATIC), name="static")
+@app.get("/static/{file_path:path}")
+async def serve_static(file_path: str):
+    """Serve static files (JS, CSS, images)."""
+    full = os.path.join(STATIC, file_path)
+    if os.path.isfile(full):
+        mt, _ = mimetypes.guess_type(full)
+        return FileResponse(full, media_type=mt or "application/octet-stream")
+    return JSONResponse({"detail": "Not Found"}, status_code=404)
 
 @app.exception_handler(404)
 async def serve_spa(request, exc):
-    """Render index.html for any non-API path (SPA routing)."""
+    """Render index.html for any non-API, non-static path (SPA routing)."""
     index = os.path.join(STATIC, "index.html")
     if os.path.isfile(index):
         return FileResponse(index, media_type="text/html")
-    from fastapi.responses import JSONResponse
     return JSONResponse({"detail": "Not Found"}, status_code=404)
