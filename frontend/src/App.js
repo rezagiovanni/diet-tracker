@@ -70,7 +70,7 @@ function LineChart({ title, labels, data, color, yLabel }) {
         plugins: {
           legend: { display: false },
           datalabels: {
-            color: '#fff', anchor: 'end', align: 'right', offset: 4,
+            color: '#fff', anchor: 'end', align: 'left', offset: 4,
             font: { weight: 'bold', size: 10 },
             formatter: v => v || ''
           }
@@ -198,7 +198,7 @@ function WeightChart({ title, wbf7 }) {
         plugins: {
           legend: { display: false },
           datalabels: {
-            color: '#fff', anchor: 'end', align: 'right', offset: 4,
+            color: '#fff', anchor: 'end', align: 'left', offset: 4,
             font: { weight: 'bold', size: 10 },
             formatter: v => v || ''
           }
