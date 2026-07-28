@@ -32,13 +32,9 @@ def _bq():
 
 def _q(sql):
     try:
-        print(f"BQ SQL: {sql}", flush=True)
         rows = _bq().query(sql).result()
-        res = [dict(r) for r in rows]
-        print(f"BQ result ({len(res)} rows): {res}", flush=True)
-        return res
+        return [dict(r) for r in rows]
     except Exception as e:
-        print(f"BQ error: {e}", flush=True)
         return []
 def _today(): return date.today().isoformat()
 def _week(): d = date.today(); return [(d - timedelta(days=i)).isoformat() for i in range(6, -1, -1)]
@@ -83,7 +79,7 @@ def deficit_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
     rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(kcal),0) kcal FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
     data = {r["d"].isoformat(): TDEE - int(r["kcal"]) for r in rows}
-    return {"labels": days, "values": [data.get(d,TDEE) for d in days], "tdee": TDEE}
+    return {"labels": days, "values": [data.get(d,0) for d in days], "tdee": TDEE}
 
 @app.get("/weight-bf-7d")
 def weight_bf_7d():
@@ -93,19 +89,6 @@ def weight_bf_7d():
     return {"labels": days,
             "weight": [data.get(d,(None,None))[0] for d in days],
             "body_fat": [data.get(d,(None,None))[1] for d in days]}
-
-@app.get("/debug-files")
-async def debug_files():
-    """List static dir contents (debug)."""
-    import os
-    result = {"static_dir": STATIC, "exists": os.path.isdir(STATIC)}
-    if os.path.isdir(STATIC):
-        files = []
-        for root, dirs, fnames in os.walk(STATIC):
-            for f in fnames:
-                files.append(os.path.relpath(os.path.join(root, f), STATIC))
-        result["files"] = sorted(files)
-    return result
 
 @app.get("/macros-today")
 def macros_today():
