@@ -68,7 +68,7 @@ function LineChart({ title, labels, data, color, yLabel }) {
         responsive: true,
         color: theme.text,
         plugins: { legend: { display: false } },
-        scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { ticks: { display: false, color: theme.muted }, grid: { color: theme.border } } }
+        scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { afterFit: (a) => a.width = 20, ticks: { display: false, color: theme.muted }, grid: { color: theme.border } } }
       }} />
     </div>
   );
