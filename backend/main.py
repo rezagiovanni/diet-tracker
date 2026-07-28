@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 SA_KEY = "/home/rezagiovanni/diet/service/diet_webapp_key.json"
 PROJECT = "data-gym-480909"
 DATASET = "diet"
+TDEE = 2035
 
 _client = None
 def _bq():
@@ -76,6 +77,13 @@ def protein_7d():
     rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(protein_g),0) protein FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
     data = {r["d"].isoformat(): round(r["protein"],1) for r in rows}
     return {"labels": days, "values": [data.get(d,0) for d in days]}
+
+@app.get("/deficit-7d")
+def deficit_7d():
+    days = _week(); dl = ",".join(f"'{d}'" for d in days)
+    rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(kcal),0) kcal FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
+    data = {r["d"].isoformat(): TDEE - int(r["kcal"]) for r in rows}
+    return {"labels": days, "values": [data.get(d,TDEE) for d in days], "tdee": TDEE}
 
 @app.get("/weight-bf-7d")
 def weight_bf_7d():

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Line, Pie } from 'react-chartjs-2';
+import { Line, Pie, Bar } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {
   Chart as ChartJS,
-  CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend
+  CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend
 } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, ChartDataLabels);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, ChartDataLabels);
 
 // ── Dark Theme Constants ──
 const theme = {
@@ -120,6 +120,50 @@ function PieChart({ title, labels, data }) {
   );
 }
 
+function DeficitChart({ title, deficit }) {
+  const colors = deficit.values.map(v => v >= 0 ? '#2ea043' : '#f85149');
+  return (
+    <div style={{
+      background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16,
+      padding: 20, margin: 10, flex: 1, minWidth: 300,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    }}>
+      <h3 style={{ margin: '0 0 4px', color: theme.text, fontSize: 15, fontWeight: 600 }}>{title}</h3>
+      <div style={{ color: theme.muted, fontSize: 12, marginBottom: 12 }}>
+        TDEE: {deficit.tdee} kcal &mdash; Target defisit: 500 kcal/hari
+      </div>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
+        {deficit.labels.filter((_, i) => i >= deficit.labels.length - 1).map((l, i) => {
+          const idx = deficit.labels.length - 1;
+          const v = deficit.values[idx];
+          return (
+            <div key={i} style={{
+              background: '#21262d', borderRadius: 10, padding: '8px 16px', textAlign: 'center', flex: 1
+            }}>
+              <div style={{ color: theme.muted, fontSize: 11 }}>Today</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: v >= 0 ? theme.green : theme.red }}>
+                {v >= 0 ? '+' : ''}{v} kcal
+              </div>
+              <div style={{ color: theme.muted, fontSize: 11 }}>defisit</div>
+            </div>
+          );
+        })}
+      </div>
+      <Bar data={{
+        labels: deficit.labels,
+        datasets: [{ label: 'Defisit (kcal)', data: deficit.values, backgroundColor: colors, borderRadius: 4 }]
+      }} options={{
+        responsive: true, color: theme.text,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: theme.muted }, grid: { display: false } },
+          y: { afterFit: (a) => a.width = 20, ticks: { display: false }, grid: { color: theme.border } }
+        }
+      }} />
+    </div>
+  );
+}
+
 function WeightChart({ title, wbf7 }) {
   return (
     <div style={{
@@ -153,6 +197,7 @@ export default function App() {
   const [prot7, setProt7] = useState({ labels: [], values: [] });
   const [wbf7, setWbf7] = useState({ labels: [], weight: [], body_fat: [] });
   const [macros, setMacros] = useState({ labels: [], values: [] });
+  const [deficit, setDeficit] = useState({ labels: [], values: [], tdee: 2035 });
 
   useEffect(() => {
     axios.get('/today').then(r => setToday(r.data));
@@ -160,6 +205,7 @@ export default function App() {
     axios.get('/protein-7d').then(r => setProt7(r.data));
     axios.get('/weight-bf-7d').then(r => setWbf7(r.data));
     axios.get('/macros-today').then(r => setMacros(r.data));
+    axios.get('/deficit-7d').then(r => setDeficit(r.data));
   }, []);
 
   return (
@@ -184,9 +230,12 @@ export default function App() {
         <LineChart title="Daily Protein (7d)" labels={prot7.labels} data={prot7.values} color={theme.blue} yLabel="g" />
       </div>
 
-      {/* Bottom row: Weight + Pie */}
+      {/* Bottom row: Weight + Deficit + Pie */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
         <WeightChart title="Weight & Body Fat (7d)" wbf7={wbf7} />
+        <DeficitChart title="Daily Defisit (7d)" deficit={deficit} />
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
         {macros.values.length > 0 && <PieChart title="Macros Today" labels={macros.labels} data={macros.values} />}
       </div>
 
