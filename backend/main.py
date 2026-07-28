@@ -137,6 +137,7 @@ def today_foods():
         it["protein_pct"] = round(it["protein"]/totals["protein"]*100,1) if totals["protein"] else 0
         it["carbs_pct"] = round(it["carbs"]/totals["carbs"]*100,1) if totals["carbs"] else 0
         it["fat_pct"] = round(it["fat"]/totals["fat"]*100,1) if totals["fat"] else 0
+    items.sort(key=lambda x: x["kcal_pct"], reverse=True)
     return {"date": t, "items": items}
 
 # ── Serve SPA ──

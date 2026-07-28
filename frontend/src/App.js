@@ -287,19 +287,21 @@ export default function App() {
         </div>
       )}
 
+      {/* Pie + line graphs */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto 12px' }}>
+        {macros.values.length > 0 && <PieChart title="Macros Today" labels={macros.labels} data={macros.values} />}
+      </div>
+
       {/* Line graphs row */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
         <LineChart title="Daily Calories (7d)" labels={cal7.labels} data={cal7.values} color={theme.green} yLabel="kcal" />
         <LineChart title="Daily Protein (7d)" labels={prot7.labels} data={prot7.values} color={theme.blue} yLabel="g" />
       </div>
 
-      {/* Bottom row: Weight + Deficit + Pie */}
+      {/* Bottom row: Weight + Deficit */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
         <WeightChart title="Weight & Body Fat (7d)" wbf7={wbf7} />
         <DeficitChart title="Daily Defisit (7d)" deficit={deficit} />
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
-        {macros.values.length > 0 && <PieChart title="Macros Today" labels={macros.labels} data={macros.values} />}
       </div>
 
       <div style={{ textAlign: 'center', color: theme.muted, fontSize: 11, marginTop: 32 }}>
