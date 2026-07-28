@@ -83,6 +83,19 @@ def weight_bf_7d():
             "weight": [data.get(d,(None,None))[0] for d in days],
             "body_fat": [data.get(d,(None,None))[1] for d in days]}
 
+@app.get("/debug-files")
+async def debug_files():
+    """List static dir contents (debug)."""
+    import os
+    result = {"static_dir": STATIC, "exists": os.path.isdir(STATIC)}
+    if os.path.isdir(STATIC):
+        files = []
+        for root, dirs, fnames in os.walk(STATIC):
+            for f in fnames:
+                files.append(os.path.relpath(os.path.join(root, f), STATIC))
+        result["files"] = sorted(files)
+    return result
+
 @app.get("/macros-today")
 def macros_today():
     t = _today()
