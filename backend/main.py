@@ -116,6 +116,29 @@ def macros_today():
     r = rows[0] if rows else {}
     return {"labels": ["Protein","Carbs","Fat"], "values": [round(r.get("p",0),1), round(r.get("c",0),1), round(r.get("f",0),1)]}
 
+@app.get("/today-foods")
+def today_foods():
+    """Detail makanan hari ini + kontribusi %."""
+    t = _today()
+    rows = _q(f"SELECT food, grams, kcal, protein_g, carbs_g, fat_g FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}' ORDER BY kcal DESC")
+    items = []
+    totals = {"kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
+    for r in rows:
+        items.append(dict(food=r["food"], grams=float(r["grams"]), kcal=round(float(r["kcal"]),1),
+            protein=round(float(r.get("protein_g",0)),1),
+            carbs=round(float(r.get("carbs_g",0)),1),
+            fat=round(float(r.get("fat_g",0)),1)))
+        totals["kcal"] += items[-1]["kcal"]
+        totals["protein"] += items[-1]["protein"]
+        totals["carbs"] += items[-1]["carbs"]
+        totals["fat"] += items[-1]["fat"]
+    for it in items:
+        it["kcal_pct"] = round(it["kcal"]/totals["kcal"]*100,1) if totals["kcal"] else 0
+        it["protein_pct"] = round(it["protein"]/totals["protein"]*100,1) if totals["protein"] else 0
+        it["carbs_pct"] = round(it["carbs"]/totals["carbs"]*100,1) if totals["carbs"] else 0
+        it["fat_pct"] = round(it["fat"]/totals["fat"]*100,1) if totals["fat"] else 0
+    return {"date": t, "items": items}
+
 # ── Serve SPA ──
 from fastapi.responses import FileResponse, JSONResponse
 import os, mimetypes

@@ -201,7 +201,8 @@ export default function App() {
   const [prot7, setProt7] = useState({ labels: [], values: [] });
   const [wbf7, setWbf7] = useState({ labels: [], weight: [], body_fat: [] });
   const [macros, setMacros] = useState({ labels: [], values: [] });
-  const [deficit, setDeficit] = useState({ labels: [], values: [], tdee: 2035 });
+  const [deficit, setDeficit] = useState({ labels: [], values: [], pcts: [], tdee: 2035 });
+  const [todayFoods, setTodayFoods] = useState([]);
 
   useEffect(() => {
     axios.get('/today').then(r => setToday(r.data));
@@ -210,6 +211,7 @@ export default function App() {
     axios.get('/weight-bf-7d').then(r => setWbf7(r.data));
     axios.get('/macros-today').then(r => setMacros(r.data));
     axios.get('/deficit-7d').then(r => setDeficit(r.data));
+    axios.get('/today-foods').then(r => setTodayFoods(r.data.items || []));
   }, []);
 
   return (
@@ -249,6 +251,41 @@ export default function App() {
           );
         })()}
       </div>
+
+      {/* Food Detail Table */}
+      {todayFoods.length > 0 && (
+        <div style={{ maxWidth: 1000, margin: '12px auto', background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          <h3 style={{ margin: '0 0 12px', color: theme.text, fontSize: 15, fontWeight: 600 }}>Today's Food Detail</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${theme.border}`, color: theme.muted, textTransform: 'uppercase', fontSize: 11, letterSpacing: 0.5 }}>
+                  <th style={{ textAlign: 'left', padding: '8px 6px' }}>Food</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>g</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>kcal</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>Kcal%</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>Protein%</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>Carbs%</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>Fat%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todayFoods.map((it, i) => (
+                  <tr key={i} style={{ borderBottom: `1px solid ${theme.border}33`, color: theme.text }}>
+                    <td style={{ padding: '8px 6px', fontWeight: 500 }}>{it.food}</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.muted }}>{it.grams}</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px' }}>{it.kcal}</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.green }}>{it.kcal_pct}%</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.blue }}>{it.protein_pct}%</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.orange }}>{it.carbs_pct}%</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.red }}>{it.fat_pct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Line graphs row */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto' }}>
