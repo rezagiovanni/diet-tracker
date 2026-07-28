@@ -120,7 +120,7 @@ def macros_today():
 def today_foods():
     """Detail makanan hari ini + kontribusi %, grouped by food name."""
     t = _today()
-    rows = _q(f"SELECT food, SUM(grams) grams, SUM(kcal) kcal, SUM(protein_g) protein_g, SUM(carbs_g) carbs_g, SUM(fat_g) fat_g FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}' GROUP BY food ORDER BY SUM(protein_g) DESC")
+    rows = _q(f"SELECT food, SUM(grams) grams, SUM(kcal) kcal, SUM(protein_g) protein_g, SUM(carbs_g) carbs_g, SUM(fat_g) fat_g FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}' GROUP BY food")
     items = []
     totals = {"kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
     for r in rows:
