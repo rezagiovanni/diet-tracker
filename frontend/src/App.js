@@ -68,7 +68,7 @@ function LineChart({ title, labels, data, color, yLabel }) {
         responsive: true,
         color: theme.text,
         plugins: { legend: { labels: { color: theme.muted } } },
-        scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { ticks: { color: theme.muted }, grid: { color: theme.border } } }
+        scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { ticks: { display: false, color: theme.muted }, grid: { color: theme.border } } }
       }} />
     </div>
   );
@@ -95,7 +95,7 @@ function PieChart({ title, labels, data }) {
         responsive: true,
         color: theme.text,
         plugins: {
-          legend: { position: 'bottom', labels: { color: theme.text, padding: 12, font: { size: 12 } } },
+          legend: { display: false },
           datalabels: {
             color: '#fff', fontWeight: 'bold', fontSize: 12,
             formatter: (v, ctx) => {
@@ -132,15 +132,15 @@ function WeightChart({ title, wbf7 }) {
         labels: wbf7.labels,
         datasets: [
           { label: 'Weight (kg)', data: wbf7.weight, borderColor: theme.purple, backgroundColor: theme.purple + '44', yAxisID: 'y', tension: 0.3, pointRadius: 4 },
-          { label: 'Body Fat %', data: wbf7.body_fat, borderColor: theme.orange, backgroundColor: theme.orange + '44', yAxisID: 'y1', tension: 0.3, pointRadius: 4 }
+          { label: 'Body Fat %', data: wbf7.body_fat, borderColor: theme.purple, backgroundColor: theme.purple + '44', yAxisID: 'y', tension: 0.3, pointRadius: 4, borderDash: [5, 5] }
         ]
       }} options={{
         responsive: true,
         color: theme.text,
         plugins: { legend: { labels: { color: theme.muted } } },
         scales: {
-          y: { type: 'linear', position: 'left', ticks: { color: theme.muted }, grid: { color: theme.border } },
-          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: theme.muted } }
+          y: { ticks: { display: false }, grid: { color: theme.border } },
+          x: { ticks: { color: theme.muted }, grid: { color: theme.border } }
         }
       }} />
     </div>
