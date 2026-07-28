@@ -56,7 +56,7 @@ def today():
     rows = _q(f"""
         SELECT COALESCE(SUM(kcal),0) kcal, COALESCE(SUM(protein_g),0) protein,
                1300 target_kcal, 90 target_protein
-        FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts, 'Asia/Jakarta')='{t}'
+        FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}'
     """)
     r = rows[0] if rows else {}
     return {"date": t,
@@ -66,21 +66,21 @@ def today():
 @app.get("/calories-7d")
 def calories_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
-    rows = _q(f"SELECT DATE(ts, 'Asia/Jakarta') d, COALESCE(SUM(kcal),0) kcal FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts, 'Asia/Jakarta') IN ({dl}) GROUP BY d ORDER BY d")
+    rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(kcal),0) kcal FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
     data = {r["d"].isoformat(): int(r["kcal"]) for r in rows}
     return {"labels": days, "values": [data.get(d,0) for d in days]}
 
 @app.get("/protein-7d")
 def protein_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
-    rows = _q(f"SELECT DATE(ts, 'Asia/Jakarta') d, COALESCE(SUM(protein_g),0) protein FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts, 'Asia/Jakarta') IN ({dl}) GROUP BY d ORDER BY d")
+    rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(protein_g),0) protein FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
     data = {r["d"].isoformat(): round(r["protein"],1) for r in rows}
     return {"labels": days, "values": [data.get(d,0) for d in days]}
 
 @app.get("/weight-bf-7d")
 def weight_bf_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
-    rows = _q(f"SELECT DATE(ts, 'Asia/Jakarta') d, weight_kg, body_fat_pct FROM `{PROJECT}.{DATASET}.daily_measure` WHERE DATE(ts, 'Asia/Jakarta') IN ({dl}) ORDER BY d")
+    rows = _q(f"SELECT DATE(ts) d, weight_kg, body_fat_pct FROM `{PROJECT}.{DATASET}.daily_measure` WHERE DATE(ts) IN ({dl}) ORDER BY d")
     data = {r["d"].isoformat(): (r["weight_kg"], r["body_fat_pct"]) for r in rows}
     return {"labels": days,
             "weight": [data.get(d,(None,None))[0] for d in days],
@@ -102,7 +102,7 @@ async def debug_files():
 @app.get("/macros-today")
 def macros_today():
     t = _today()
-    rows = _q(f"SELECT COALESCE(SUM(protein_g),0) p, COALESCE(SUM(carbs_g),0) c, COALESCE(SUM(fat_g),0) f FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts, 'Asia/Jakarta')='{t}'")
+    rows = _q(f"SELECT COALESCE(SUM(protein_g),0) p, COALESCE(SUM(carbs_g),0) c, COALESCE(SUM(fat_g),0) f FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}'")
     r = rows[0] if rows else {}
     return {"labels": ["Protein","Carbs","Fat"], "values": [round(r.get("p",0),1), round(r.get("c",0),1), round(r.get("f",0),1)]}
 
