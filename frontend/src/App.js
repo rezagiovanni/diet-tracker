@@ -67,7 +67,7 @@ function LineChart({ title, labels, data, color, yLabel }) {
       }} options={{
         responsive: true,
         color: theme.text,
-        plugins: { legend: { labels: { color: theme.muted } } },
+        plugins: { legend: { display: false } },
         scales: { x: { ticks: { color: theme.muted }, grid: { color: theme.border } }, y: { ticks: { display: false, color: theme.muted }, grid: { color: theme.border } } }
       }} />
     </div>
@@ -137,7 +137,7 @@ function WeightChart({ title, wbf7 }) {
       }} options={{
         responsive: true,
         color: theme.text,
-        plugins: { legend: { labels: { color: theme.muted } } },
+        plugins: { legend: { display: false } },
         scales: {
           y: { ticks: { display: false }, grid: { color: theme.border } },
           x: { ticks: { color: theme.muted }, grid: { color: theme.border } }
