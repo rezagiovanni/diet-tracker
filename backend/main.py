@@ -67,21 +67,21 @@ def today():
 def calories_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
     rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(kcal),0) kcal FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
-    data = {r["d"]: int(r["kcal"]) for r in rows}
+    data = {r["d"].isoformat(): int(r["kcal"]) for r in rows}
     return {"labels": days, "values": [data.get(d,0) for d in days]}
 
 @app.get("/protein-7d")
 def protein_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
     rows = _q(f"SELECT DATE(ts) d, COALESCE(SUM(protein_g),0) protein FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts) IN ({dl}) GROUP BY d ORDER BY d")
-    data = {r["d"]: round(r["protein"],1) for r in rows}
+    data = {r["d"].isoformat(): round(r["protein"],1) for r in rows}
     return {"labels": days, "values": [data.get(d,0) for d in days]}
 
 @app.get("/weight-bf-7d")
 def weight_bf_7d():
     days = _week(); dl = ",".join(f"'{d}'" for d in days)
     rows = _q(f"SELECT DATE(ts) d, weight_kg, body_fat_pct FROM `{PROJECT}.{DATASET}.daily_measure` WHERE DATE(ts) IN ({dl}) ORDER BY d")
-    data = {r["d"]: (r["weight_kg"], r["body_fat_pct"]) for r in rows}
+    data = {r["d"].isoformat(): (r["weight_kg"], r["body_fat_pct"]) for r in rows}
     return {"labels": days,
             "weight": [data.get(d,(None,None))[0] for d in days],
             "body_fat": [data.get(d,(None,None))[1] for d in days]}
