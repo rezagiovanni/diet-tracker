@@ -212,7 +212,7 @@ export default function App() {
     axios.get('/weight-bf-7d').then(r => setWbf7(r.data));
     axios.get('/macros-today').then(r => setMacros(r.data));
     axios.get('/deficit-7d').then(r => setDeficit(r.data));
-    axios.get('/api/today-foods').then(r => setTodayFoods(r.data.items || []));
+    axios.get('/today-foods').then(r => setTodayFoods(r.data.items || []));
   }, []);
 
   return (
