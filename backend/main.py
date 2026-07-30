@@ -153,7 +153,7 @@ def protein_tips():
     intake = intake_rows[0] if intake_rows else {}
     kcal_used = float(intake.get("k",0) or 0)
     protein_used = float(intake.get("p",0) or 0)
-    remaining_kcal = max(0, tdee - kcal_used)
+    remaining_kcal = max(0, 1300 - kcal_used)
     remaining_protein = max(0, 90 - protein_used)
 
     suggestions = []

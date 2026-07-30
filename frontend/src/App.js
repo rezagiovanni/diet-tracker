@@ -204,6 +204,7 @@ export default function App() {
   const [deficit, setDeficit] = useState({ labels: [], values: [], pcts: [], tdee: 2035 });
   const [todayFoods, setTodayFoods] = useState([]);
   const [proteinTips, setProteinTips] = useState(null);
+  const [showTips, setShowTips] = useState(false);
 
   useEffect(() => {
     axios.get('/today').then(r => setToday(r.data));
@@ -233,7 +234,10 @@ export default function App() {
             background: theme.card, border: `1px solid ${theme.border}`,
             borderRadius: 16, padding: 20, margin: 10, minWidth: 200, flex: 1,
             boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer'
-          }} onClick={() => axios.get('/protein-tips').then(r => setProteinTips(r.data))}>
+            }} onClick={() => {
+            if (showTips) { setShowTips(false); setProteinTips(null); }
+            else { setShowTips(true); axios.get('/protein-tips').then(r => setProteinTips(r.data)); }
+            }}>
             <div style={{ color: theme.muted, fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>
               Today Protein
             </div>
@@ -250,7 +254,7 @@ export default function App() {
             <div style={{ color: theme.muted, fontSize: 12, marginTop: 6, textAlign: 'right' }}>
               {Math.round((today.protein.total/today.protein.target)*100)}%
             </div>
-            {proteinTips && (
+            {showTips && proteinTips && (
               <div style={{ background: '#21262d', borderRadius: 10, padding: 10, marginTop: 10, color: theme.muted, fontSize: 12 }}>
                 <div style={{ fontWeight: 600, marginBottom: 6, color: theme.orange }}>Protein tips</div>
                 {proteinTips.suggestions.map((s, i) => (
@@ -299,7 +303,7 @@ export default function App() {
       </div>
 
       {/* Pie chart */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, margin: '0 auto 12px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 420, margin: '0 auto 12px', width: '100%' }}>
         {macros.values.length > 0 && <PieChart title="Macros Today" labels={macros.labels} data={macros.values} />}
       </div>
 
@@ -326,8 +330,8 @@ export default function App() {
                     <td style={{ padding: '8px 6px', fontWeight: 500 }}>{it.food}</td>
                     <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.muted }}>{it.grams}</td>
                     <td style={{ textAlign: 'right', padding: '8px 6px' }}>{it.kcal}</td>
-                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.green }}>{it.kcal_pct}%</td>
-                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.blue }}>{it.protein_pct}%</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.blue }}>{it.kcal_pct}%</td>
+                    <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.green }}>{it.protein_pct}%</td>
                     <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.orange }}>{it.carbs_pct}%</td>
                     <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.red }}>{it.fat_pct}%</td>
                   </tr>
@@ -365,8 +369,8 @@ export default function App() {
                     <tr key={i} style={{ borderBottom: `1px solid ${theme.border}33`, color: theme.text }}>
                       <td style={{ padding: '8px 6px', fontWeight: 500 }}>{it.food}</td>
                       <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.muted }}>{it.grams}</td>
-                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.blue }}>{it.protein}g</td>
-                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.blue }}>{pPct}%</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.green }}>{it.protein}g</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.green }}>{pPct}%</td>
                       <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.orange }}>{it.carbs}g</td>
                       <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.orange }}>{cPct}%</td>
                       <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.red }}>{it.fat}g</td>
