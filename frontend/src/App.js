@@ -338,6 +338,48 @@ export default function App() {
         </div>
       )}
 
+      {/* Macro Composition Table */}
+      {todayFoods.length > 0 && (
+        <div style={{ maxWidth: 1000, margin: '12px auto', background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          <h3 style={{ margin: '0 0 12px', color: theme.text, fontSize: 15, fontWeight: 600 }}>Macro Composition per Food</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${theme.border}`, color: theme.muted, textTransform: 'uppercase', fontSize: 11, letterSpacing: 0.5 }}>
+                  <th style={{ textAlign: 'left', padding: '8px 6px' }}>Food</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>g</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>Protein</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>P%</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>Carbs</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>C%</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>Fat</th>
+                  <th style={{ textAlign: 'right', padding: '8px 6px' }}>F%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todayFoods.map((it, i) => {
+                  const pPct = it.grams > 0 ? (it.protein / it.grams * 100).toFixed(1) : 0;
+                  const cPct = it.grams > 0 ? (it.carbs / it.grams * 100).toFixed(1) : 0;
+                  const fPct = it.grams > 0 ? (it.fat / it.grams * 100).toFixed(1) : 0;
+                  return (
+                    <tr key={i} style={{ borderBottom: `1px solid ${theme.border}33`, color: theme.text }}>
+                      <td style={{ padding: '8px 6px', fontWeight: 500 }}>{it.food}</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.muted }}>{it.grams}</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.blue }}>{it.protein}g</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.blue }}>{pPct}%</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.orange }}>{it.carbs}g</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.orange }}>{cPct}%</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.red }}>{it.fat}g</td>
+                      <td style={{ textAlign: 'right', padding: '8px 6px', color: theme.red }}>{fPct}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', color: theme.muted, fontSize: 11, marginTop: 32 }}>
         Diet Tracker v1.0 &mdash; auto-deploy from GitHub
       </div>
