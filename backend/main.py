@@ -192,6 +192,37 @@ def protein_tips():
         "suggestions": suggestions
     }
 
+@app.get("/daily-facts")
+def daily_facts():
+    t = _today()
+    facts = []
+    # today's totals
+    rows = _q(f"SELECT COALESCE(SUM(kcal),0) k, COALESCE(SUM(protein_g),0) p, COALESCE(SUM(carbs_g),0) c, COALESCE(SUM(fat_g),0) f FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}'")
+    r = rows[0] if rows else {}
+    kcal = float(r.get("k",0) or 0)
+    protein = float(r.get("p",0) or 0)
+    carbs = float(r.get("c",0) or 0)
+    fat = float(r.get("f",0) or 0)
+    facts.append(f"🔥 Total kalori hari ini: {int(kcal)} kcal / 1300 kcal target")
+    facts.append(f"💪 Protein: {protein:.1f}g / 90g target ({protein/90*100:.0f}%)")
+    # weight trend
+    w_rows = _q(f"SELECT weight_kg FROM `{PROJECT}.{DATASET}.daily_measure` ORDER BY ts DESC LIMIT 2")
+    if len(w_rows) >= 2:
+        w1 = float(w_rows[0].get("weight_kg",0) or 0)
+        w2 = float(w_rows[1].get("weight_kg",0) or 0)
+        diff = w2 - w1
+        if diff < 0:
+            facts.append(f"📉 Berat turun {abs(diff):.1f}kg dari {w2:.1f}kg ke {w1:.1f}kg")
+        elif diff > 0:
+            facts.append(f"📈 Berat naik {diff:.1f}kg dari {w2:.1f}kg ke {w1:.1f}kg")
+        else:
+            facts.append(f"⚖️ Berat stabil di {w1:.1f}kg")
+    # deficit
+    tdee = get_tdee()
+    deficit = tdee - kcal
+    facts.append(f"🎯 Defisit kalori: {int(deficit)} kcal (TDEE {int(tdee)} - intake {int(kcal)})")
+    return {"facts": facts}
+
 # ── Serve SPA ──
 from fastapi.responses import FileResponse, JSONResponse
 import os, mimetypes
