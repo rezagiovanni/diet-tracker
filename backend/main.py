@@ -196,13 +196,15 @@ def protein_tips():
 def daily_facts():
     t = _today()
     facts = []
-    # today's totals
+    # 1. Fetch latest 1 Day 1 Fact from BigQuery (cron-generated)
+    bq_rows = _q(f"SELECT fact_text FROM `{PROJECT}.{DATASET}.daily_facts` ORDER BY created_at DESC LIMIT 1")
+    if bq_rows:
+        facts.append(bq_rows[0]["fact_text"])
+    # 2. today's totals
     rows = _q(f"SELECT COALESCE(SUM(kcal),0) k, COALESCE(SUM(protein_g),0) p, COALESCE(SUM(carbs_g),0) c, COALESCE(SUM(fat_g),0) f FROM `{PROJECT}.{DATASET}.food_entries` WHERE DATE(ts)='{t}'")
     r = rows[0] if rows else {}
     kcal = float(r.get("k",0) or 0)
     protein = float(r.get("p",0) or 0)
-    carbs = float(r.get("c",0) or 0)
-    fat = float(r.get("f",0) or 0)
     facts.append(f"🔥 Total kalori hari ini: {int(kcal)} kcal / 1300 kcal target")
     facts.append(f"💪 Protein: {protein:.1f}g / 90g target ({protein/90*100:.0f}%)")
     # weight trend
