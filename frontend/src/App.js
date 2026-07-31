@@ -205,7 +205,6 @@ export default function App() {
   const [todayFoods, setTodayFoods] = useState([]);
   const [proteinTips, setProteinTips] = useState(null);
   const [showTips, setShowTips] = useState(false);
-  const [dailyFacts, setDailyFacts] = useState([]);
 
   useEffect(() => {
     axios.get('/today').then(r => setToday(r.data));
@@ -215,7 +214,6 @@ export default function App() {
     axios.get('/macros-today').then(r => setMacros(r.data));
     axios.get('/deficit-7d').then(r => setDeficit(r.data));
     axios.get('/today-foods').then(r => setTodayFoods(r.data.items || []));
-    axios.get('/daily-facts').then(r => setDailyFacts(r.data.facts || []));
   }, []);
 
   return (
@@ -304,21 +302,11 @@ export default function App() {
         <DeficitChart title="Daily Defisit (7d)" deficit={deficit} />
       </div>
 
-      {/* Pie chart + Daily Facts */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', maxWidth: 1000, margin: '0 auto 12px' }}>
-        <div style={{ flex: 1, minWidth: 200, maxWidth: 340 }}>
+      {/* Pie chart */}
+      <div style={{ display: 'flex', justifyContent: 'center', maxWidth: 1000, margin: '0 auto 12px' }}>
+        <div style={{ minWidth: 200, maxWidth: 460, width: '100%' }}>
           {macros.values.length > 0 && <PieChart title="Macros Today" labels={macros.labels} data={macros.values} />}
         </div>
-        {dailyFacts.length > 0 && (
-          <div style={{ flex: 1, minWidth: 200, maxWidth: 340, background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-            <h3 style={{ margin: '0 0 12px', color: theme.text, fontSize: 15, fontWeight: 600 }}>📊 1 Day 1 Fact</h3>
-            <div style={{ color: theme.muted, fontSize: 13, lineHeight: 1.8 }}>
-              {dailyFacts.map((f, i) => (
-                <div key={i} style={{ padding: '2px 0' }}>{f}</div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Food Detail Table */}
